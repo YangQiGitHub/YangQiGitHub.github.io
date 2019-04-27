@@ -1,0 +1,170 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta name="generator" content="Hexo 3.8.0"><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport"><meta content="yes" name="apple-mobile-web-app-capable"><meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"><meta content="telephone=no" name="format-detection"><meta name="description" content="前端开发 杨奇"><title>移动端audio的autoplay问题 | 杨奇</title><link rel="stylesheet" type="text/css" href="/css/style.css?v=0.0.0"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/normalize/8.0.0/normalize.min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/1.0.0/pure-min.css"><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/pure/1.0.0/grids-responsive-min.css"><link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css"><script type="text/javascript" src="//cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script><link rel="Shortcut Icon" type="image/x-icon" href="/favicon.ico"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="apple-touch-icon-precomposed" href="/apple-touch-icon.png"></head><body><div class="body_container"><div id="header"><div class="site-name"><h1 class="hidden">移动端audio的autoplay问题</h1><a id="logo" href="/.">杨奇</a><p class="description">Runner·羊和Coder·羊 的世界</p></div><div id="nav-menu"><a class="current" href="/."><i class="fa fa-home"> 首页</i></a><a href="/archives/"><i class="fa fa-archive"> 归档</i></a><a href="/about/"><i class="fa fa-user"> 关于</i></a><a href="/atom.xml"><i class="fa fa-rss"> 订阅</i></a></div></div><div class="pure-g" id="layout"><div class="pure-u-1 pure-u-md-3-4"><div class="content_container"><div class="post"><h1 class="post-title">移动端audio的autoplay问题</h1><div class="post-meta">Feb 23, 2018<span> | </span><span class="category"><a href="/categories/爱前端/">爱前端</a></span><script src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js" async></script><span id="busuanzi_container_page_pv"> | <span id="busuanzi_value_page_pv"></span><span> 阅读</span></span></div><div class="clear"><div class="toc-article" id="toc"><div class="toc-title">文章目录</div><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#需求描述"><span class="toc-number">1.</span> <span class="toc-text">需求描述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#audio的autoplay问题"><span class="toc-number">2.</span> <span class="toc-text">audio的autoplay问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#iOS-Safari"><span class="toc-number">2.1.</span> <span class="toc-text">iOS Safari</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Chrome-for-Android"><span class="toc-number">2.2.</span> <span class="toc-text">Chrome for Android</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Android微信端和iOS微信端"><span class="toc-number">2.3.</span> <span class="toc-text">Android微信端和iOS微信端</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#诸多野鸡浏览器"><span class="toc-number">2.4.</span> <span class="toc-text">诸多野鸡浏览器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#总结一下"><span class="toc-number">2.5.</span> <span class="toc-text">总结一下</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#结论"><span class="toc-number">2.6.</span> <span class="toc-text">结论</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#关于H5传播页面在产品设计上的思考"><span class="toc-number">3.</span> <span class="toc-text">关于H5传播页面在产品设计上的思考</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考资料"><span class="toc-number">4.</span> <span class="toc-text">参考资料</span></a></li></ol></div></div><div class="post-content"><p>年前接到一个H5活动页的任务（<a href="https://h5.qufenqi.com/recruit/" target="_blank" rel="noopener">老同事，你还好吗?</a>），用了两天时间开发上线，付出了不少精力，但东西做的差强人意，下面主要记录下开发过程中遇到的坑。</p>
+<h2 id="需求描述"><a href="#需求描述" class="headerlink" title="需求描述"></a>需求描述</h2><p>页面共由8个场景组成，场景之间通过上滑和下滑切换，不同场景中分别对应各自的小动画，每个场景右上角设有音频播放控件，且当页面打开时，背景音乐自动播放。活动页传播的主要入口在微信端。</p>
+<h2 id="audio的autoplay问题"><a href="#audio的autoplay问题" class="headerlink" title="audio的autoplay问题"></a><code>audio</code>的autoplay问题</h2><p>Html5的<code>audio</code>可设置一个autoplay属性，用于控制音频的自动播放，用户打开页面，播放自动开始。在PC端这么干是没有问题的，但在移动端就呵呵哒了~，各种不灵不生效。</p>
+<p>考虑到移动端浏览器的复杂性，主要归纳为四类分别说明: </p>
+<ol>
+<li>iOS Safari (iOS 10实测)</li>
+<li>Chrome for Android （Chrome 62,操作系统Android 7.1.1为例）</li>
+<li>微信端 (安卓和iOS)</li>
+<li>诸多野鸡浏览器 (坚果pro自带浏览器为例)</li>
+</ol>
+<h3 id="iOS-Safari"><a href="#iOS-Safari" class="headerlink" title="iOS Safari"></a>iOS Safari</h3><p>在移动端的Safair下给audio标签设置autoplay无效的，为什么呢？<br><a href="https://developer.apple.com/library/content/documentation/AudioVideo/Conceptual/Using_HTML5_Audio_Video/Device-SpecificConsiderations/Device-SpecificConsiderations.html" target="_blank" rel="noopener">苹果官方解释如下:</a></p>
+<blockquote>
+<p>In Safari on iOS (for all devices, including iPad), where the user may be on a cellular network and be charged per data unit, preload and autoplay are disabled. No data is loaded until the user initiates it. This means the JavaScript play() and load() methods are also inactive until the user initiates playback, unless the play() or load() method is triggered by <strong>user action</strong>. In other words, a user-initiated Play button works, but an onLoad=”play()” event does not.</p>
+</blockquote>
+<p>举个例子,这样可以播放:<br><figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;audio <span class="attribute">id</span>=<span class="string">"myMusic"</span>&gt;&lt;/audio&gt;</span><br><span class="line">&lt;input <span class="attribute">type</span>=<span class="string">"button"</span> <span class="attribute">value</span>=<span class="string">"Play"</span> <span class="attribute">onclick</span>=<span class="string">"document.myMusic.play()"</span>&gt;</span><br></pre></td></tr></table></figure></p>
+<p>这样则不行:<br><figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;body <span class="attribute">onload</span>=<span class="string">"document.myMusic.play()"</span>&gt;</span><br></pre></td></tr></table></figure></p>
+<p>也就是说，音频或者视频的播放，必须通过<strong> user action</strong>来触发，当然，苹果这样做，站在用户的角度来说的确没有问题，毕竟移动端的流量过于昂贵。</p>
+<h3 id="Chrome-for-Android"><a href="#Chrome-for-Android" class="headerlink" title="Chrome for Android"></a>Chrome for Android</h3><p>那么，chrome对此的态度如何呢？答案是——更强硬!</p>
+<p><img src="https://i.imgflip.com/ngd6c.jpg" alt></p>
+<p>我们可以在浏览器地址栏输入<em>chrome://flags/</em>打开实验性功能，手动改变<strong>autoplay policy</strong>。</p>
+<p><img src="//img002.qufenqi.com/products/d2/d0/d2d0a32dc3b718448ebce0e4698237af.png" style="display: inline-block; width: 300px; padding: 0;" alt> <img src="//img003.qufenqi.com/products/02/47/02478b13a3006f3f2cf8adf4f89ac45e.png" style="display: inline-block; width: 300px; padding: 0;" alt></p>
+<p>查阅<a href="https://developers.google.com/web/updates/2017/09/autoplay-policy-changes" target="_blank" rel="noopener">谷歌官方文档:</a></p>
+<blockquote>
+<p>As you may have noticed, web browsers are moving towards stricter autoplay policies in order to improve the user experience, minimize incentives to install ad blockers, and reduce data consumption on expensive and/or constrained networks. These changes are intended to give greater control of playback to users and to benefit publishers with legitimate use cases.</p>
+</blockquote>
+<p>Chrome做出这种限制是为了提升用户体验，防止广告对自动播放的滥用，浪费流量，同时对用户造成打扰，音频的播放需要<strong>user gesture</strong>，和苹果的策略如出一辙。</p>
+<h3 id="Android微信端和iOS微信端"><a href="#Android微信端和iOS微信端" class="headerlink" title="Android微信端和iOS微信端"></a>Android微信端和iOS微信端</h3><p>Android微信端设置autoplay生效，万事大吉。<br>iOS微信端设置autoplay不生效，不生效，不生效。（不过有hack方法，别担心，往下看）</p>
+<h3 id="诸多野鸡浏览器"><a href="#诸多野鸡浏览器" class="headerlink" title="诸多野鸡浏览器"></a>诸多野鸡浏览器</h3><p>我自己的手机是坚果pro，使用厂商自带浏览器测试autoplay不生效。</p>
+<h3 id="总结一下"><a href="#总结一下" class="headerlink" title="总结一下"></a>总结一下</h3><p>限制音频自动播放不生效的原因可以分为两类：</p>
+<ol>
+<li>移动端流量昂贵，防止流量偷跑造成损失</li>
+<li>防止广告滥用，对用户造成困扰</li>
+</ol>
+<p>在这两种限制下，要想播放音乐，必须通过苹果所说的<strong> user action</strong>或者谷歌说的<strong> user gesture</strong>来触发，我们将二者一致称为<strong>用户行为</strong>，接下来，我们做个试验，代码如下：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE html&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">"en"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">"UTF-8"</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">title</span>&gt;</span>audio自动播放测试<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">meta</span> <span class="attr">content</span>=<span class="string">"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"</span> <span class="attr">name</span>=<span class="string">"viewport"</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">audio</span> <span class="attr">id</span>=<span class="string">"music"</span> <span class="attr">src</span>=<span class="string">"https://h5.qufenqi.com/recruit/see.mp3"</span> <span class="attr">autoplay</span>&gt;</span><span class="tag">&lt;/<span class="name">audio</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">button</span> <span class="attr">id</span>=<span class="string">"playBtn"</span>&gt;</span>播放<span class="tag">&lt;/<span class="name">button</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">button</span> <span class="attr">id</span>=<span class="string">"pauseBtn"</span>&gt;</span>暂停<span class="tag">&lt;/<span class="name">button</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"triggerDiv"</span> <span class="attr">style</span>=<span class="string">"height: 300px; background-color: green;"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">"log"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">"text/javascript"</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="javascript">      <span class="keyword">var</span> music = <span class="built_in">document</span>.getElementById(<span class="string">'music'</span>);</span></span><br><span class="line"><span class="javascript">      <span class="keyword">var</span> playBtn = <span class="built_in">document</span>.getElementById(<span class="string">'playBtn'</span>);</span></span><br><span class="line"><span class="javascript">      <span class="keyword">var</span> pauseBtn = <span class="built_in">document</span>.getElementById(<span class="string">'pauseBtn'</span>);</span></span><br><span class="line"><span class="javascript">      <span class="keyword">var</span> triggerDiv = <span class="built_in">document</span>.getElementById(<span class="string">'triggerDiv'</span>);</span></span><br><span class="line"><span class="javascript">      <span class="keyword">var</span> logDiv = <span class="built_in">document</span>.getElementById(<span class="string">'log'</span>);</span></span><br><span class="line"><span class="undefined"></span></span><br><span class="line"><span class="actionscript">      playBtn.onclick = <span class="function"><span class="keyword">function</span><span class="params">()</span> </span>&#123;</span></span><br><span class="line"><span class="undefined">        music.play();</span></span><br><span class="line"><span class="undefined">      &#125;</span></span><br><span class="line"><span class="actionscript">      pauseBtn.onclick = <span class="function"><span class="keyword">function</span><span class="params">()</span> </span>&#123;</span></span><br><span class="line"><span class="undefined">        music.pause();</span></span><br><span class="line"><span class="undefined">      &#125;</span></span><br><span class="line"><span class="undefined"></span></span><br><span class="line"><span class="actionscript">      <span class="comment">// window.onload = musicHandler;  这种非用户行为事件中执行music.play()，音乐是不会播放的</span></span></span><br><span class="line"><span class="actionscript">      <span class="comment">// triggerDiv.addEventListener('touchstart', musicHandler)</span></span></span><br><span class="line"><span class="actionscript">      <span class="comment">// triggerDiv.addEventListener('touchmove', musicHandler)</span></span></span><br><span class="line"><span class="actionscript">      <span class="comment">// triggerDiv.addEventListener('touchend', musicHandler)</span></span></span><br><span class="line"><span class="actionscript">      <span class="comment">// triggerDiv.addEventListener('click', musicHandler)</span></span></span><br><span class="line"><span class="undefined"></span></span><br><span class="line"><span class="actionscript">      <span class="function"><span class="keyword">function</span> <span class="title">musicHandler</span><span class="params">(e)</span> </span>&#123;</span></span><br><span class="line"><span class="actionscript">        logDiv.innerHTML += e.type + <span class="string">'&lt;br/&gt;'</span>;</span></span><br><span class="line"><span class="actionscript">        <span class="keyword">if</span> (music.paused) &#123;</span></span><br><span class="line"><span class="actionscript">          music.play(); <span class="comment">// 播放音乐</span></span></span><br><span class="line"><span class="actionscript">          logDiv.innerHTML += <span class="string">'play方法在'</span> + e.type + <span class="string">'事件回调中执行&lt;br/&gt;'</span>;</span></span><br><span class="line"><span class="undefined">        &#125;</span></span><br><span class="line"><span class="undefined">      &#125;</span></span><br><span class="line"><span class="undefined">    </span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>我们分别单独给四个用户行为事件（touchstart,touchmove,touchend,click）回调函数中绑定music.play()方法，考虑到移动端常用的两种手势交互“滑动”和“点击”，分别加以验证，结果如下：</p>
+<p><strong>1. 手势点击</strong><br>用户的手势点击将会按如下顺序触发相关事件的回调函数：<br><code>touchstart</code>—<code>touchend</code>—<code>click</code><br>为测试方便，我们每次只绑定一个事件，分别测试。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">移动端浏览器</th>
+<th>autoplay生效</th>
+<th>touchstart播放音乐</th>
+<th>touchend播放音乐</th>
+<th>click播放音乐</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">iOS Safair</td>
+<td>✘</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td style="text-align:left">Chrome for Android</td>
+<td>✘</td>
+<td>✘</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td style="text-align:left">iOS微信端</td>
+<td>✘(可Hack)</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td style="text-align:left">Android微信端</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td style="text-align:left">坚果pro自带浏览器</td>
+<td>✘</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<p><strong>2. 手势滑动</strong><br>当手势为滑动时，浏览器将会按照如下顺序触发事件回调函数：<br><code>touchstart</code>-<code>若干个touchmove</code>-<code>touchend</code><br>为测试方便，我们每次只绑定一个事件，分别测试。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">移动端浏览器</th>
+<th>autoplay生效</th>
+<th>touchstart播放音乐</th>
+<th>touchmove播放音乐</th>
+<th>touchend播放音乐</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">iOS Safair</td>
+<td>✘</td>
+<td>Yes</td>
+<td>✘</td>
+<td>✘</td>
+</tr>
+<tr>
+<td style="text-align:left">Chrome for Android</td>
+<td>✘</td>
+<td>✘</td>
+<td>✘</td>
+<td>✘</td>
+</tr>
+<tr>
+<td style="text-align:left">iOS微信端</td>
+<td>✘(可Hack)</td>
+<td>Yes</td>
+<td>✘</td>
+<td>✘</td>
+</tr>
+<tr>
+<td style="text-align:left">Android微信端</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td style="text-align:left">坚果pro自带浏览器</td>
+<td>✘</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<p><strong>说明1：</strong>“✘”表示，autoplay属性不生效，或者对应事件回调函数中的<code>music.play()</code>已经执行，但浏览器没有播放音频。</p>
+<p><strong>说明2：</strong>以上结果都是当页面请求完毕，首次手势交互运用于triggerDiv上，得出的结论。我在测试过程中发现，在Chrome浏览器下，当我们点击playBtn让音频播放，点击pauseBtn让音频暂停后，再将滑动手势作用于triggerDiv上的时候，对应事件回调函数中的<code>music.play()</code>执行，浏览器可以正常播放音频，Safair也是如此。</p>
+<p><strong>说明3：</strong> iOS微信端自动播放Hack方法,方法一<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"http://res.wx.qq.com/open/js/jweixin-1.0.0.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined"></span></span><br><span class="line"><span class="actionscript"><span class="function"><span class="keyword">function</span> <span class="title">autoPlayAudio1</span><span class="params">()</span> </span>&#123;</span></span><br><span class="line"><span class="undefined">      wx.config(&#123;</span></span><br><span class="line"><span class="actionscript">         debug: <span class="literal">false</span>,</span></span><br><span class="line"><span class="actionscript">         appId: <span class="string">''</span>,</span></span><br><span class="line"><span class="undefined">         timestamp: 1,</span></span><br><span class="line"><span class="actionscript">         nonceStr: <span class="string">''</span>,</span></span><br><span class="line"><span class="actionscript">         signature: <span class="string">''</span>,</span></span><br><span class="line"><span class="undefined">         jsApiList: []</span></span><br><span class="line"><span class="undefined">      &#125;);</span></span><br><span class="line"><span class="actionscript">      wx.ready(<span class="function"><span class="keyword">function</span><span class="params">()</span> </span>&#123;</span></span><br><span class="line"><span class="javascript">         <span class="built_in">document</span>.getElementById(<span class="string">'audio'</span>).play();</span></span><br><span class="line"><span class="undefined">      &#125;);</span></span><br><span class="line"><span class="undefined">   &#125;</span></span><br><span class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<p>方法二<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">document</span>.addEventListener(<span class="string">'WeixinJSBridgeReady'</span>, <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">   audio.play();</span><br><span class="line">   &#125;, <span class="literal">false</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<h3 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h3><p>从两种手势交互下的测试结果来看，不同浏览器之间的差异相当明显，当交互手势为<strong>点击</strong>的时候，<code>touchend</code>和<code>click</code>事件中触发音频播放表现得一致管用。</p>
+<p>当交互手势为<strong>滑动</strong>的时候，浏览器差异较大，这也是<a href="http://case.h5tu.com/debug/vivoCartoon_test/index.html?v=1110401&amp;from=timeline&amp;isappinstalled=0" target="_blank" rel="noopener">这一年走过最长的路，是回家路</a>在Chrome for Android和iOS Safair中没有声音的原因。</p>
+<blockquote>
+<p><a href="http://case.h5tu.com/debug/vivoCartoon_test/index.html?v=1110401&amp;from=timeline&amp;isappinstalled=0" target="_blank" rel="noopener">这一年走过最长的路，是回家路</a>,这个H5是在touchmove事件回调函数中播放音频的，在Chrome for Android和iOS Safair中没有声音，在iOS微信端是有声音的，原因是在微信中用了hack方法，大家可以看下源码。</p>
+</blockquote>
+<h2 id="关于H5传播页面在产品设计上的思考"><a href="#关于H5传播页面在产品设计上的思考" class="headerlink" title="关于H5传播页面在产品设计上的思考"></a>关于H5传播页面在产品设计上的思考</h2><p>大多数H5传播页面，上线后的生命周期极其短暂，用户可能只会打开一次或者几次，我们要在极其短暂的用户停留时间内完成信息的传达或者用户的转化，所以产品在不同浏览器端的体验一致性和良好的使用体验相当重要。</p>
+<p>就音频的自动播放这个功能来说，如果说我们只拿微信端作为传播的主战场，那么这个功能是可以通过Hack的方式完美实现的。例如：<a href="https://h5.qufenqi.com/recruit/" target="_blank" rel="noopener">老同事，你还好吗?</a></p>
+<p>如果音频是通过滑动的方式触发播放，那么在不同场景下的浏览器表现很难一致。例如：<a href="http://case.h5tu.com/debug/vivoCartoon_test/index.html?v=1110401&amp;from=timeline&amp;isappinstalled=0" target="_blank" rel="noopener">这一年走过最长的路，是回家路</a>，chrome和safair中是没有声音的。</p>
+<p>通过诱导用户手势点击来触发音频播放，可以在每个场景下都有一致的体验，例如：<a href="https://h5.qufenqi.com/ipo/?e_channel_from=thunf" target="_blank" rel="noopener">趣店集团纽交所上市！我了个趣，真有你的！</a></p>
+<p>当我们接到类似开发需求的时候，在产品设计阶段，通过合理设计引导用户点击，从而规避掉音频自动播放这个坑，也许是最好的选择。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ol>
+<li><a href="https://developer.apple.com/library/content/documentation/AudioVideo/Conceptual/Using_HTML5_Audio_Video/Device-SpecificConsiderations/Device-SpecificConsiderations.html" target="_blank" rel="noopener">User Control of Downloads Over Cellular Networks</a></li>
+<li><a href="https://developers.google.com/web/updates/2017/09/autoplay-policy-changes" target="_blank" rel="noopener">Autoplay Policy Changes</a></li>
+<li><a href="https://android.stackexchange.com/questions/59134/enable-autoplay-html5-video-in-chrome" target="_blank" rel="noopener">Enable autoplay HTML5 video in chrome</a></li>
+<li><a href="https://blog.thunf.cn/2017/10/20/20171019-qudian-ipo-h5/" target="_blank" rel="noopener">从策划到传播 - 记趣店IPO快闪H5开发全过程</a></li>
+<li><a href="https://kerita.github.io/2017/08/18/2017/audio-cannot-autoplay-in-iOS/" target="_blank" rel="noopener">解决iOS下音频无法自动播放</a></li>
+<li><a href="http://leonshi.com/2015/09/06/mobile-video-play/" target="_blank" rel="noopener">移动端视频播放那些事儿</a></li>
+<li><a href="https://imququ.com/post/new-video-policies-for-ios10.html" target="_blank" rel="noopener">iOS 10 Safari 视频播放新政策</a></li>
+<li><a href="https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/audio#%E5%B1%9E%E6%80%A7" target="_blank" rel="noopener">audio技术文档</a></li>
+<li><a href="https://segmentfault.com/a/1190000011080683" target="_blank" rel="noopener">H5音频踩坑与填坑</a></li>
+<li><a href="https://www.broken-links.com/2010/07/08/making-html5-video-work-on-android-phones/" target="_blank" rel="noopener">Making HTML5 Video work on Android phones</a></li>
+<li><a href="http://blog.csdn.net/boyit0/article/details/65437228" target="_blank" rel="noopener">微信h5页面开发遇到那些坑</a></li>
+</ol>
+</div><iframe src="/donate/?AliPayQR=/img/ali.png&amp;WeChatQR=/img/wx.png&amp;GitHub=https://github.com/YangQiGitHub&amp;BTCQR=null&amp;BTCKEY=null&amp;PayPal=null" style="overflow-x:hidden; overflow-y:hidden; border:0xp none #fff; min-height:240px; width:100%;" frameborder="0" scrolling="no"></iframe><div class="tags"><a href="/tags/前端/">前端</a></div><div class="post-nav"><a class="pre" href="/2018/05/21/微信小程序授权登录最佳实践/">微信小程序授权登录最佳实践</a><a class="next" href="/2018/02/23/hello-world/">Hello World</a></div><div id="lv-container" data-id="city" data-uid="MTAyMC8zODQxNy8xNDk0NQ=="><script>(function(d, s) {
+   var j, e = d.getElementsByTagName(s)[0];
+   if (typeof LivereTower === 'function') { return; }
+   j = d.createElement(s);
+   j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+   j.async = true;
+   e.parentNode.insertBefore(j, e);
+})(document, 'script');
+</script></div></div></div></div><div class="pure-u-1-4 hidden_mid_and_down"><div id="sidebar"><div class="widget"><form class="search-form" action="//www.baidu.com/baidu" method="get" accept-charset="utf-8" target="_blank"><input type="search" name="word" maxlength="20" placeholder="Search"><input type="hidden" name="si" value="http://yoursite.com"><input name="tn" type="hidden" value="bds"><input name="cl" type="hidden" value="3"><input name="ct" type="hidden" value="2097152"><input name="s" type="hidden" value="on"></form></div><div class="widget"><div class="widget-title"><i class="fa fa-folder-o"> 分类</i></div><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/爱前端/">爱前端</a><span class="category-list-count">8</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/爱瞎折腾/">爱瞎折腾</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/爱花钱/">爱花钱</a><span class="category-list-count">1</span></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-star-o"> 标签</i></div><div class="tagcloud"><a href="/tags/canvas/" style="font-size: 15px;">canvas</a> <a href="/tags/JavaScript/" style="font-size: 15px;">JavaScript</a> <a href="/tags/刷书/" style="font-size: 15px;">刷书</a> <a href="/tags/博客/" style="font-size: 15px;">博客</a> <a href="/tags/搞基/" style="font-size: 15px;">搞基</a> <a href="/tags/微信小程序/" style="font-size: 15px;">微信小程序</a> <a href="/tags/前端/" style="font-size: 15px;">前端</a> <a href="/tags/欲望清单/" style="font-size: 15px;">欲望清单</a></div></div><div class="widget"><div class="widget-title"><i class="fa fa-file-o"> 最近文章</i></div><ul class="post-list"><li class="post-list-item"><a class="post-list-link" href="/2019/01/27/代理模式/">代理模式</a></li><li class="post-list-item"><a class="post-list-link" href="/2019/01/13/策略模式/">策略模式</a></li><li class="post-list-item"><a class="post-list-link" href="/2019/01/09/单例模式/">单例模式</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/12/28/《你不知道的JavaScript》上卷读书笔记/">《你不知道的JavaScript》上卷读书笔记</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/09/30/欲望清单/">欲望清单</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/08/27/canvas/">canvas</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/07/22/微信小程序开发框架从入门到放弃/">微信小程序开发框架从入门到放弃</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/05/21/微信小程序授权登录最佳实践/">微信小程序授权登录最佳实践</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/02/23/移动端audio的autoplay问题/">移动端audio的autoplay问题</a></li><li class="post-list-item"><a class="post-list-link" href="/2018/02/23/hello-world/">Hello World</a></li></ul></div><div class="widget"><div class="widget-title"><i class="fa fa-external-link"> 友情链接</i></div><ul></ul><a href="http://www.example1.com/" title="site-name1" target="_blank">site-name1</a><ul></ul><a href="http://www.example2.com/" title="site-name2" target="_blank">site-name2</a><ul></ul><a href="http://www.example3.com/" title="site-name3" target="_blank">site-name3</a></div></div></div><div class="pure-u-1 pure-u-md-3-4"><div id="footer">Copyright © 2019 <a href="/." rel="nofollow">杨奇.</a> Powered by<a rel="nofollow" target="_blank" href="https://hexo.io"> Hexo.</a><a rel="nofollow" target="_blank" href="https://github.com/tufu9441/maupassant-hexo"> Theme</a> by<a rel="nofollow" target="_blank" href="https://github.com/pagecho"> Cho.</a></div></div></div><a class="show" id="rocket" href="#top"></a><script type="text/javascript" src="/js/totop.js?v=0.0.0" async></script><script type="text/javascript" src="//cdn.bootcss.com/fancybox/3.3.5/jquery.fancybox.min.js" async></script><script type="text/javascript" src="/js/fancybox.js?v=0.0.0" async></script><link rel="stylesheet" type="text/css" href="//cdn.bootcss.com/fancybox/3.3.5/jquery.fancybox.min.css"><script type="text/javascript" src="/js/codeblock-resizer.js?v=0.0.0"></script><script type="text/javascript" src="/js/smartresize.js?v=0.0.0"></script></div></body></html>
